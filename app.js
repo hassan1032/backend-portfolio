@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
 import {errorMiddleware} from "./middlewares/error.js"
+import messageRouter from "./Router/messageRoutes.js"
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use(fileUpload({
     
 
 }))
+app.use('/api/messages', messageRouter);
  app.use(errorMiddleware)
 
 export default app;
