@@ -3,8 +3,8 @@ import { config } from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
-import {errorMiddleware} from "./middlewares/error.js"
-import messageRouter from "./Router/messageRoutes.js"
+import { errorMiddleware } from "./middlewares/error.js";
+import messageRouter from "./Router/messageRoutes.js";
 
 const app = express();
 
@@ -19,16 +19,16 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.urlencoded({extended:true}))
+app.use(express.urlencoded({ extended: true }));
 
-app.use(fileUpload({
+app.use(
+  fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
-    useTempFiles:true,
-    tempFileDir:'/tmp/'
-    
-
-}))
-app.use('/api/messages', messageRouter);
- app.use(errorMiddleware)
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
+app.use("/api/messages", messageRouter);
+app.use(errorMiddleware);
 
 export default app;

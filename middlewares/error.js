@@ -21,7 +21,7 @@ export const errorMiddleware = (err, req, res, next) => {
     const message = `json Web Token Is Expired. Try To Login`;
     err = new ErrorHandler(message, 400);
   }
-  if (err.name === "CasrError") {
+  if (err.name === "CastError") {
     const message = `invalid ${err.path}`;
     err = new ErrorHandler(message, 400);
   }
