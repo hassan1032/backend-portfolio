@@ -2,7 +2,7 @@ import catchAsyncErrors from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/error.js";
 import { User } from "../Models/userSchema.js";
 import { v2 as cloudinary } from "cloudinary";
-import {generateToken} from"../utils/jwtToken.js"
+import { generateToken } from "../utils/jwtToken.js";
 
 export const register = catchAsyncErrors(async (req, res, next) => {
   if (!req.files || Object.keys(req.files).length === 0) {
@@ -69,7 +69,24 @@ export const register = catchAsyncErrors(async (req, res, next) => {
       url: cloudinaryResume.secure_url,
     },
   });
- 
 
   generateToken(user, " User Registered!", 201, res);
+});
+
+// Login Controller :::::::::::::::::
+
+export const login = catchAsyncErrors(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return next(new ErrorHandler("Please enter email and password", 400));
+  }
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return next(new ErrorHandler("Invalid email or password", 401));
+  }
+  const isPasswordMatched = await user.comparePassword(password);
+  if (!isPasswordMatched) {
+    return next(new ErrorHandler("Invalid email or password", 401));
+  }
+  generateToken(user, "Logged in successfully", 200, res);
 });

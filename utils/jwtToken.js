@@ -1,4 +1,5 @@
 
+
 export const generateToken = (user, message, statusCode, res) => {
     const token = user.getJwtToken();
     res
@@ -16,4 +17,5 @@ export const generateToken = (user, message, statusCode, res) => {
         token,
       });
   };
+
   
