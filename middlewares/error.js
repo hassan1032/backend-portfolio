@@ -1,40 +1,42 @@
+
 class ErrorHandler extends Error {
-  constructor(message, code, status) {
+  constructor(message, statusCode) {
     super(message);
-    this.code = code;
-    this.status = status;
+    this.statusCode = statusCode;
   }
 }
 
 export const errorMiddleware = (err, req, res, next) => {
   err.message = err.message || "Internal Server Error";
-  err.status = err.status || 500;
+  err.statusCode = err.statusCode || 500;
+
   if (err.code === 11000) {
-    const message = `Duplicate ${Object.keys(err.keyValue)} Entered`;
-    err = new ErrorHandler(message, 400, "Bad Request");
+    const message = `Duplicate ${Object.keys(err.keyValue)} Entered`,
+      err = new ErrorHandler(message, 400);
   }
-  if (err.name === "jsonWebTokenError") {
-    err = new ErrorHandler("Invalid Token", 401, "Unauthorized");
+  if (err.name === "JsonWebTokenError") {
+    const message = `Json Web Token is invalid, Try again!`;
     err = new ErrorHandler(message, 400);
   }
   if (err.name === "TokenExpiredError") {
-    const message = `json Web Token Is Expired. Try To Login`;
+    const message = `Json Web Token is expired, Try again!`;
     err = new ErrorHandler(message, 400);
   }
   if (err.name === "CastError") {
-    const message = `invalid ${err.path}`;
-    err = new ErrorHandler(message, 400);
+    const message = `Invalid ${err.path}`,
+      err = new ErrorHandler(message, 400);
   }
 
   const errorMessage = err.errors
-    ? Object.value(err.errors)
+    ? Object.values(err.errors)
         .map((error) => error.message)
-        .join(", ")
+        .join(" ")
     : err.message;
-  res.status(err.status).json({
-    error: errorMessage,
-    status: err.status,
-  }); 
+
+  return res.status(err.statusCode).json({
+    success: false,
+    message: errorMessage,
+  });
 };
 
 export default ErrorHandler;

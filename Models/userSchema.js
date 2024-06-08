@@ -1,75 +1,88 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto"
 
-const userSchema = new mongoose.Schema(
-  {
-    fullName: {
-      type: String,
-      required: [true, "Full Name is Required"],
-    },
-    email: {
-      type: String,
-      required: [true, "Email is Required"],
-    },
-    phone: {
-      type: Number,
-      required: [true, "Phone Number is Required"],
-    },
-    aboutMe: {
-      type: String,
-      required: [true, "About me is Required"],
-    },
-    password: {
-      type: String,
-      required: [true, "Password is Required"],
-      minLength: [8, "Password must be contain at least 8 charcater!"],
-      select: false,
-    },
-    avatar: {
-      public_id: {
-        type: String,
-        required: true,
-      },
-      url: {
-        type: String,
-        required: true,
-      },
-    },
-
-    resume: {
-      public_id: {
-        type: String,
-        required: true,
-      },
-      url: {
-        type: String,
-        required: true,
-      },
-    },
-    githubUrl: String,
-    linkedinUrl: String,
-    instagramUrl: String,
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
+const userSchema = new mongoose.Schema({
+  fullName: {
+    type: String,
+    required: [true, "Name Required!"],
   },
-  { timestamps: true }
-);
-// For Hashing Password
-userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-  }
+  email: {
+    type: String,
+    required: [true, "Email Required!"],
+  },
+  phone: {
+    type: String,
+    required: [true, "Phone Required!"],
+  },
+  aboutMe: {
+    type: String,
+    required: [true, "About Me Section Is Required!"],
+  },
+  password: {
+    type: String,
+    required: [true, "Password Required!"],
+    minLength: [8, "Password Must Contain At Least 8 Characters!"],
+    select: false
+  },
+  avatar: {
+    public_id: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+  },
+  resume: {
+    public_id: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+  },
+  portfolioURL: {
+    type: String,
+    required: [true, "Portfolio URL Required!"],
+  },
+  githubURL: {
+    type: String,
+  },
+  instagramURL: {
+    type: String,
+  },
+  twitterURL: {
+    type: String,
+  },
+  linkedInURL: {
+    type: String,
+  },
+  facebookURL: {
+    type: String,
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 });
-// And Comparing Password with Hashpassword
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    next();
+  }
+  this.password = await bcrypt.hash(this.password, 10);
+});
+
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
-// Genrating JSONWEBTOKEN
-userSchema.methods.getJwtToken = function () {
-  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
+
+userSchema.methods.generateJsonWebToken = function () {
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: process.env.JWT_EXPIRES,
   });
 };
 
