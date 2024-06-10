@@ -4,6 +4,8 @@ import { User } from "../Models/userSchema.js";
 import { v2 as cloudinary } from "cloudinary";
 import { generateToken } from "../utils/jwtToken.js";
 
+//  CREATE USER:::::::::
+
 export const register = catchAsyncErrors(async (req, res, next) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     return next(new ErrorHandler("Avatar Required!", 400));
@@ -103,7 +105,7 @@ export const logout = catchAsyncErrors(async (req, res, next) => {
       message: "Logged Out!",
     });
 });
-
+// GET USER:::::::::::::
 export const getUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id);
   res.status(200).json({
@@ -111,7 +113,7 @@ export const getUser = catchAsyncErrors(async (req, res, next) => {
     user,
   });
 });
-
+// UPDATED PROFILE
 export const updateProfile = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
     fullName: req.body.fullName,
@@ -168,7 +170,7 @@ export const updateProfile = catchAsyncErrors(async (req, res, next) => {
     message: "Profile Updated Successfully!",
   });
 });
-
+// UPDATED PASSWORD
 export const updatePassword = catchAsyncErrors(async (req, res, next) => {
   const { currentPassword, newPassword, confirmPassword } = req.body;
   if (!currentPassword || !newPassword || !confirmPassword) {
@@ -188,6 +190,16 @@ export const updatePassword = catchAsyncErrors(async (req, res, next) => {
   await user.save();
   res.status(200).json({
     success: true,
+
     message: "Password Updated!",
+  });
+});
+// GET USER PORTFOLIO
+
+export const getUserPortfolio = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  res.status(200).json({
+    success: true,
+    user,
   });
 });
