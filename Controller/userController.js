@@ -104,11 +104,67 @@ export const logout = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
-
-export const getUser = catchAsyncErrors(async(req,res,next)=>{
+export const getUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id);
   res.status(200).json({
     success: true,
     user,
+  });
+});
+
+export const updateProfile = catchAsyncErrors(async (req, res, next) => {
+  const newUserData = {
+    fullName: req.body.fullName,
+    email: req.body.email,
+    phone: req.body.phone,
+    aboutMe: req.body.aboutMe,
+    githubURL: req.body.githubURL,
+    instagramURL: req.body.instagramURL,
+    portfolioURL: req.body.portfolioURL,
+    facebookURL: req.body.facebookURL,
+    twitterURL: req.body.twitterURL,
+    linkedInURL: req.body.linkedInURL,
+  };
+  if (req.files && req.files.avatar) {
+    const avatar = req.files.avatar;
+    const user = await User.findById(req.user.id);
+    const profileImageId = user.avatar.public_id;
+    await cloudinary.uploader.destroy(profileImageId);
+    const newProfileImage = await cloudinary.uploader.upload(
+      avatar.tempFilePath,
+      {
+        folder: "PORTFOLIO AVATAR",
+      }
+    );
+    newUserData.avatar = {
+      public_id: newProfileImage.public_id,
+      url: newProfileImage.secure_url,
+    };
+  }
+
+  if (req.files && req.files.resume) {
+    const resume = req.files.resume;
+    const user = await User.findById(req.user.id);
+    const resumeFileId = user.resume.public_id;
+    if (resumeFileId) {
+      await cloudinary.uploader.destroy(resumeFileId);
+    }
+    const newResume = await cloudinary.uploader.upload(resume.tempFilePath, {
+      folder: "PORTFOLIO RESUME",
     });
-})
+    newUserData.resume = {
+      public_id: newResume.public_id,
+      url: newResume.secure_url,
+    };
+  }
+  const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
+  res.status(200).json({
+    success: true,
+    user,
+    message: "Profile Updated Successfully!",
+  });
+});
