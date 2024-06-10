@@ -232,7 +232,7 @@ export const forgotPassword = catchAsyncErrors(async(req,res,next)=>{
     } catch (error) {
       user.resetPasswordExpire = undefined;
       user.resetPasswordToken = undefined;
-      await user.save({ validateBeforeSave: false });
+      await user.save();
       return next(new ErrorHandler(error.message, 500));
       
       
