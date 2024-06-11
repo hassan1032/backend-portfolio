@@ -6,6 +6,7 @@ import fileUpload from "express-fileupload";
 import { errorMiddleware } from "./middlewares/error.js";
 import messageRouter from "./Router/messageRoutes.js";
 import userRouter from "./Router/userRouter.js"
+import timeLinerouter from "./Router/timelineRoutes.js"
 const app = express();
 
 config({ path: "./config/config.env" });
@@ -30,6 +31,8 @@ app.use(
 );
 app.use("/api/messages", messageRouter);
 app.use("/api/user",userRouter)
+app.use("/api/timeline",timeLinerouter)
 app.use(errorMiddleware);
+
 
 export default app;
