@@ -31,14 +31,17 @@ export const deleteTimeline = catchasyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "Timeline deleted successfully",
-    });
-
+  });
 });
 
 export const getallTimeline = catchasyncErrors(async (req, res, next) => {
-    const timelines = await Timeline.find().sort({ createdAt: -1 });
-    res.status(200).json({
-        success: true,
-        timelines,
+    try {
+        const timelines = await Timeline.find();
+        res.status(200).json({
+          success: true,
+          timelines,
         });
+      } catch (error) {
+        next(error); 
+      }
 });
