@@ -3,8 +3,8 @@ import ErrorHandler from "../middlewares/error.js";
 import { User } from "../Models/userSchema.js";
 import { v2 as cloudinary } from "cloudinary";
 import { generateToken } from "../utils/jwtToken.js";
-import  {sendEmail}  from "../utils/senEmail.js";
-
+import { sendEmail } from "../utils/senEmail.js";
+import crypto from "crypto"
 //  CREATE USER:::::::::
 
 export const register = catchAsyncErrors(async (req, res, next) => {
@@ -206,35 +206,58 @@ export const getUserPortfolio = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new ErrorHandler("User not found with this email", 404));
+  }
+  const resetToken = user.getResetPasswordToken();
+  await user.save({ validateBeforeSave: false });
 
-export const forgotPassword = catchAsyncErrors(async(req,res,next)=>{
-  const user = await User.findOne({email: req.body.email})
-  if(!user){
-    return next(new ErrorHandler("User not found with this email",404))
-    }
-    const resetToken = user.getResetPasswordToken();
-    await user.save({validateBeforeSave:false})
+  const resetPasswordUrl = `${process.env.DASHBOARD_URL}/password/reset/${resetToken}`;
+  const message = `Your Reset Password Token is-\n\n ${resetPasswordUrl}\n\n if Your are not request for this Please ignore it  `;
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: " Personal Portfolio Password Recovery",
+      message,
+    });
+    res.status(200).json({
+      success: true,
+      message: `Email sent to ${user.email} successfully`,
+    });
+  } catch (error) {
+    user.resetPasswordExpire = undefined;
+    user.resetPasswordToken = undefined;
+    await user.save();
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
 
-    const resetPasswordUrl = `${process.env.DASHBOARD_URL}/password/reset/${resetToken}`
-    const message = `Your Reset Password Token is-\n\n ${resetPasswordUrl}\n\n if Your are not request for this Please ignore it  `
-    try {
-      await sendEmail({
-        email:user.email,
-        subject:" Personal Portfolio Password Recovery",
-        message,
-        })
+export const resetPassword = catchAsyncErrors(async(req,res,next)=>{
+  const {token} = req.params
+  const resetPasswordToken=crypto 
+  .createHash("sha256")
+  .update(resetPasswordToken)
+  .digest("hex");
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire:{$gt:Date.now()},
+    });
+    if (!user) {
+      return next(new ErrorHandler("Reset Password Token is invalid or has been expired", 400));
+      }
+      if(req.body.password!==req.body.confirmPassword){
+        return next(new ErrorHandler("Password does not match",400));
+        }
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save();
+        generateToken()
         res.status(200).json({
-          success:true,
-          message:`Email sent to ${user.email} successfully`
-
+          success: true,
+          message: `Password has been updated successfully`
         })
-      
-    } catch (error) {
-      user.resetPasswordExpire = undefined;
-      user.resetPasswordToken = undefined;
-      await user.save();
-      return next(new ErrorHandler(error.message, 500));
-      
-      
-    }
+
 })
