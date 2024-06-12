@@ -45,40 +45,40 @@ export const getAllSkills = catchasyncErrors(async (req, res, next) => {
 });
 
 export const updateSkill = catchasyncErrors(async (req, res, next) => {
-    const { id } = req.params;
-    let skills = await skill.findById(id);
-    if (!skill) {
-      return next(new ErrorHandler("Skill not found!", 404));
-    }
-    const { proficiency } = req.body;
-    skills = await skill.findByIdAndUpdate(
-      id,
-      { proficiency },
-      {
-        new: true,
-        runValidators: true,
-        useFindAndModify: false,
-      }
-    );
-    res.status(200).json({
-      success: true,
-      message: "Skill Updated!",
-      skills,
-    });
-  });
+  const { id } = req.params;
+  let skills = await skill.findById(id);
+  if (!skill) {
+    return next(new ErrorHandler("Skill not found!", 404));
+  }
+  const { proficiency } = req.body;
 
+  skills = await skill.findByIdAndUpdate(
+    id,
+    { proficiency },
+    {
+      new: true,
+      runValidators: true,
+      useFindAndModify: false,
+    }
+  );
+  res.status(200).json({
+    success: true,
+    message: "Skill Updated!",
+    skills,
+  });
+});
 
 export const deleteSkill = catchasyncErrors(async (req, res, next) => {
-    const { id } = req.params;
-    let skills = await skill.findById(id);
-    if (!skill) {
-      return next(new ErrorHandler("Already Deleted!", 404));
-    }
-    const skillSvgId = skills.svg.public_id;
-    await cloudinary.uploader.destroy(skillSvgId);
-    await skill.deleteOne();
-    res.status(200).json({
-      success: true,
-      message: "Skill Deleted!",
-    });
+  const { id } = req.params;
+  let skills = await skill.findById(id);
+  if (!skills) {
+    return next(new ErrorHandler("Already Deleted!", 404));
+  }
+  const skillSvgId = skills.svg.public_id;
+  await cloudinary.uploader.destroy(skillSvgId);
+  await skill.deleteOne();
+  res.status(200).json({
+    success: true,
+    message: "Skill Deleted!",
   });
+});
