@@ -13,7 +13,7 @@ const softwareApplicationSchema = new mongoose.Schema({
     },
   },
 });
-export const softwareApplication = mongoose.model(
-  "softwareApplication",
+export const SoftwareApplication = mongoose.model(
+  "SoftwareApplication",
   softwareApplicationSchema
 );
