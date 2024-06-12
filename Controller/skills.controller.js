@@ -45,44 +45,40 @@ export const getAllSkills = catchasyncErrors(async (req, res, next) => {
 });
 
 export const updateSkill = catchasyncErrors(async (req, res, next) => {
-  const { id } = req.params;
-  const { title, proficiency } = req.body;
-  let skillToUpdate = await skill.findById(id);
-  if (!skillToUpdate) {
-    return next(new ErrorHandler("Skill not found!", 404));
-  }
-  if (req.files) {
-    const { svg } = req.files;
-    const cloudinaryResponse = await cloudinary.uploader.upload(
-      svg.tempFilePath,
+    const { id } = req.params;
+    let skills = await skill.findById(id);
+    if (!skill) {
+      return next(new ErrorHandler("Skill not found!", 404));
+    }
+    const { proficiency } = req.body;
+    skills = await skill.findByIdAndUpdate(
+      id,
+      { proficiency },
       {
-        folder: "PORTFOLIO_SKILLS",
+        new: true,
+        runValidators: true,
+        useFindAndModify: false,
       }
     );
-    skillToUpdate.svg = {
-      public_id: cloudinaryResponse.public_id,
-      url: cloudinaryResponse.secure_url,
-    };
-  }
-  skillToUpdate.title = title;
-  skillToUpdate.proficiency = proficiency;
-  await skillToUpdate.save();
-  res.status(200).json({
-    success: true,
-    message: "Skill updated successfully",
-    skillToUpdate,
+    res.status(200).json({
+      success: true,
+      message: "Skill Updated!",
+      skills,
+    });
   });
-});
+
 
 export const deleteSkill = catchasyncErrors(async (req, res, next) => {
     const { id } = req.params;
-    const skillToDelete = await skill.findById(id);
-    if (!skillToDelete) {
-        return next(new ErrorHandler("Skill not found!", 404));
-        }
-        await skillToDelete.deleteOne();
-        res.status(200).json({
-            success: true,
-            message: "Skill deleted successfully",
-            });
-});
+    let skills = await skill.findById(id);
+    if (!skill) {
+      return next(new ErrorHandler("Already Deleted!", 404));
+    }
+    const skillSvgId = skills.svg.public_id;
+    await cloudinary.uploader.destroy(skillSvgId);
+    await skill.deleteOne();
+    res.status(200).json({
+      success: true,
+      message: "Skill Deleted!",
+    });
+  });
