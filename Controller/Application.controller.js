@@ -56,7 +56,7 @@ export const deleteApplication = catchasyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Software Application Not Found!", 404));
   }
   const softwareApplicationSvgId = softwareApplication.svg.public_id;
-  await cloudinary.uploader.destroy(softwareApplicationsvgId);
+  await cloudinary.uploader.destroy(softwareApplicationSvgId);
   await softwareApplication.deleteOne();
   res.status(200).json({
     success: true,

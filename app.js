@@ -8,6 +8,7 @@ import messageRouter from "./Router/messageRoutes.js";
 import userRouter from "./Router/userRouter.js"
 import timeLinerouter from "./Router/timelineRoutes.js"
 import Applicationrouter from "./Router/software.ApplicationRoutes.js"
+import Skillrouter from "./Router/skillsRoutes.js"
 const app = express();
 
 config({ path: "./config/config.env" });
@@ -34,6 +35,7 @@ app.use("/api/messages", messageRouter);
 app.use("/api/user",userRouter)
 app.use("/api/timeline",timeLinerouter)
 app.use("/api/application",Applicationrouter)
+app.use("/api/siklls",Skillrouter)
 app.use(errorMiddleware);
 
 
