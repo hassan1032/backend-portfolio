@@ -100,47 +100,96 @@ export const deleteProject = catchAsyncErrors(async (req, res, next) => {
     next(error);
   }
 });
+// export const updateProject = catchAsyncErrors(async (req, res, next) => {
+//     const newProjectData = {
+//       title: req.body.title,
+//       description: req.body.description,
+//       stack: req.body.stack,
+//       technologies: req.body.technologies,
+//       deployed: req.body.deployed,
+//       projectLink: req.body.projectLink,
+//       gitRepoLink: req.body.gitRepoLink,
+//     };
+//     if (req.files && req.files.projectBanner) {
+//       const projectBanner = req.files.projectBanner;
+//       const project = await Project.findById(req.params.id);
+//       const projectImageId = project.projectBanner.public_id;
+//       await cloudinary.uploader.destroy(projectImageId);
+//       const newProjectImage = await cloudinary.uploader.upload(
+//         projectBanner.tempFilePath,
+//         {
+//           folder: "PORTFOLIO PROJECT IMAGES",
+//         }
+//       );
+//       newProjectData.projectBanner = {
+//         public_id: newProjectImage.public_id,
+//         url: newProjectImage.secure_url,
+//       };
+//     }
+//     const project = await Project.findByIdAndUpdate(
+//       req.params.id,
+//       newProjectData,
+//       {
+//         new: true,
+//         runValidators: true,
+//         useFindAndModify: false,
+//       }
+//     );
+//     res.status(200).json({
+//       success: true,
+//       message: "Project Updated!",
+//       project,
+//     });
+//   });
+
+
+
 export const updateProject = catchAsyncErrors(async (req, res, next) => {
-    const newProjectData = {
-      title: req.body.title,
-      description: req.body.description,
-      stack: req.body.stack,
-      technologies: req.body.technologies,
-      deployed: req.body.deployed,
-      projectLink: req.body.projectLink,
-      gitRepoLink: req.body.gitRepoLink,
-    };
-    if (req.files && req.files.projectBanner) {
-      const projectBanner = req.files.projectBanner;
-      const project = await Project.findById(req.params.id);
+  const newProjectData = {
+    title: req.body.title,
+    description: req.body.description,
+    stack: req.body.stack,
+    technologies: req.body.technologies,
+    deployed: req.body.deployed,
+    projectLink: req.body.projectLink,
+    gitRepoLink: req.body.gitRepoLink,
+  };
+
+  const project = await Project.findById(req.params.id);
+
+  if (req.files && req.files.projectBanner) {
+    const projectBanner = req.files.projectBanner;
+
+    // Destroy the old image if it exists
+    if (project.projectBanner && project.projectBanner.public_id) {
       const projectImageId = project.projectBanner.public_id;
       await cloudinary.uploader.destroy(projectImageId);
-      const newProjectImage = await cloudinary.uploader.upload(
-        projectBanner.tempFilePath,
-        {
-          folder: "PORTFOLIO PROJECT IMAGES",
-        }
-      );
-      newProjectData.projectBanner = {
-        public_id: newProjectImage.public_id,
-        url: newProjectImage.secure_url,
-      };
     }
-    const project = await Project.findByIdAndUpdate(
-      req.params.id,
-      newProjectData,
-      {
-        new: true,
-        runValidators: true,
-        useFindAndModify: false,
-      }
-    );
-    res.status(200).json({
-      success: true,
-      message: "Project Updated!",
-      project,
+
+    // Upload the new image
+    const newProjectImage = await cloudinary.uploader.upload(projectBanner.tempFilePath, {
+      folder: "PORTFOLIO_PROJECT_IMAGES",
     });
+
+    newProjectData.projectBanner = {
+      public_id: newProjectImage.public_id,
+      url: newProjectImage.secure_url,
+    };
+  }
+
+  // Update the project with new data
+  const updatedProject = await Project.findByIdAndUpdate(req.params.id, newProjectData, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
   });
+
+  res.status(200).json({
+    success: true,
+    message: "Project Updated!",
+    project: updatedProject,
+  });
+});
 
 export const getSingleProject = catchAsyncErrors(async (req, res, next) => {
   try {
