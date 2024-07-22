@@ -18,12 +18,16 @@
 
 export const generateToken = (user, message, statusCode, res) => {
   const token = user.generateJsonWebToken();
-  res
-    .status(statusCode)
-    .json({
-      success: true,
-      message,
-      user,
-      token, // Include the token in the response body
-    });
+  const options = {
+    expires: new Date(Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Ensure secure cookie in production
+    sameSite: 'Strict',
+  };
+
+  res.status(statusCode).cookie('token', token, options).json({
+    success: true,
+    message,
+    user,
+  });
 };
